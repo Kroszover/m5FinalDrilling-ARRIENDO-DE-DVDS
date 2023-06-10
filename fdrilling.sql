@@ -1,0 +1,76 @@
+/*Construye las siguientes consultas: • Aquellas usadas para insertar, modificar y eliminar un Customer, Staff y Actor. • Listar todas las “rental” con los datos del “customer” dado un año y mes. • Listar Número, Fecha (payment_date) y Total (amount) de todas las “payment”. • Listar todas las “film” del año 2006 que contengan un (rental_rate) mayor a 4.0.*/
+
+/*Insertar un Customer*/
+INSERT INTO customer (store_id, first_name, last_name, email, address_id, activebool, create_date, last_update) VALUES (1, 'Juan', 'Perez', 'jp3@gmail.com', 1, true, '2019-05-26 14:49:45.738', '2019-05-26 14:49:45.738');
+
+/*Modificar un Customer*/
+UPDATE customer SET first_name = 'Juan Carlos' WHERE customer_id = 599;
+
+/*Eliminar un Customer*/
+select * from customer where customer_id=2;
+--Eliminamos los regitros de las tablas que tienen una relacion con customer
+delete from payment where customer_id=2;
+delete from rental where customer_id=2;
+delete from customer where customer_id=2;
+
+/*Insertar un Staff*/
+
+INSERT INTO staff (first_name, last_name, address_id, email, store_id, active, username, password, last_update, picture) VALUES ('Juan', 'Perez', 1, 'jp1@hotmail.com', 1, true, 'jperez', '123456', '2019-05-26 14:49:45.738', null);
+
+/*Modificar un Staff*/
+UPDATE staff SET first_name = 'Juan Carlos' WHERE staff_id = 1;
+
+/*Eliminar un Staff*/
+DELETE FROM staff WHERE staff_id = 1;
+--Eliminamos los regitros de las tablas que tienen una relacion con staff
+delete from payment where staff_id=1;
+select * from rental where staff_id=1;
+--se señala un error por valores rental_id nulos, por lo que los reemplazamos por valores validos. 
+UPDATE payment SET rental_id = 1234 WHERE rental_id IS NULL;
+select * from rental where rental_id = null;
+--eliminamos los registros con rental_id nulos
+DELETE FROM payment WHERE rental_id is NULL;
+--eliminamos los registros de la tabla rental con el id deseado.
+delete from rental where staff_id=1;
+
+/*Insertar un Actor*/
+INSERT INTO actor (first_name, last_name, last_update) VALUES ('Juan', 'Perez', '2019-05-26 14:49:45.738');
+
+/*Modificar un Actor*/
+UPDATE actor SET first_name = 'Juan Carlos' WHERE actor_id = 1;
+
+/*Eliminar un Actor*/
+--Eliminamos las relaciones de la tabla film_actor
+delete from film_actor where actor_id = 1;
+DELETE FROM actor WHERE actor_id = 1;
+
+/*Listar todas las “rental” con los datos del “customer” dado un año y mes.*/
+SELECT rental.rental_id, rental.rental_date, rental.inventory_id, rental.customer_id, rental.return_date, rental.staff_id, rental.last_update, customer.first_name, customer.last_name, customer.email, customer.address_id, customer.activebool, customer.create_date, customer.last_update FROM rental INNER JOIN customer ON rental.customer_id = customer.customer_id WHERE EXTRACT(YEAR FROM rental.rental_date) = 2005 AND EXTRACT(MONTH FROM rental.rental_date) = 5;
+
+/*Listar Número, Fecha (payment_date) y Total (amount) de todas las “payment”.*/
+SELECT payment.payment_id, payment.customer_id, payment.staff_id, payment.rental_id, payment.amount, payment.payment_date FROM payment;
+
+/*Listar todas las “film” del año 2006 que contengan un (rental_rate) mayor a 4.0.*/
+
+SELECT film.film_id, film.title, film.description, film.release_year, film.language_id, film.rental_duration, film.rental_rate, film.length, film.replacement_cost, film.rating, film.last_update, film.special_features, film.fulltext FROM film WHERE EXTRACT(YEAR FROM film.release_year) = 2006 AND film.rental_rate > 4.0;
+
+/*Realiza un Diccionario de datos que contenga el nombre de las tablas y columnas, si éstas pueden ser nulas, y su tipo de dato correspondiente.*/
+SELECT 
+  t.table_name as Nombre_tabla,
+  c.column_name as Nombre_columna,
+  c.is_nullable as Puede_ser_null,
+  c.data_type as Tipo_dato
+FROM 
+  information_schema.tables t
+  JOIN information_schema.columns c ON t.table_name = c.table_name
+WHERE 
+  t.table_schema = 'public'
+GROUP BY 
+  t.table_name,
+  c.column_name,
+  c.is_nullable,
+  c.data_type,
+  c.ordinal_position
+ORDER BY 
+  t.table_name,
+  c.ordinal_position;
